@@ -10,39 +10,36 @@ from utils.callbacks import failure_callback, success_callback
 local_timezone = pendulum.timezone("Asia/Seoul")
 
 with DAG(
-    # TODO: "simple_dag"이라는 이름의 DAG 설정
-    dag_id="",
-    # TODO: default_args에는 다음 내용이 들어감
-    # TODO: "user" 사용자가 소유한 DAG / 본인의 이메일 / 실패 및 재시도 시 이메일 알림 여부
-    # TODO: 재시도 1회 / 재시도 간격 5분
-    # TODO: 실패 시 callback (failure_callback) / 성공 시 callback (success_callback)
+    dag_id="simple_dag",
     default_args={
-        "owner": "",
-        "depends_on_past": None,
-        "email": "",
-        "email_on_failure": None,
-        "email_on_retry": None,
-        "retries": None,
-        "retry_delay": None,
-        "on_failure_callback": None,
-        "on_success_callback": None,
+        "owner": "user",
+        "depends_on_past": False, #과거의 실행 결과에 의존할껀지 
+        "email": "junc@lgcns.com",
+        "email_on_failure": False,
+        "email_on_retry": False, #네트워크 안열려있으면 어짜피 안됨 
+        "retries": 1,
+        "retry_delay": timedelta(minutes=5),
+        "on_failure_callback": failure_callback,
+        "on_success_callback": success_callback,
     },
     description="Simple airflow dag",
-    schedule="0 15 * * *",
+    schedule="0 15 * * *", # timedelta 등등의 시간 관련 객체들 사용 가능
     start_date=datetime(2025, 3, 1, tzinfo=local_timezone),
-    catchup=False,
+    catchup=False, # 과거꺼까지 돌림
     tags=["lgcns", "mlops"],
 ) as dag:
     task1 = BashOperator(
         task_id="print_date",
-        # TODO: 현재 시간을 출력하는 bash_command 입력
+        bash_command="date"
     )
     task2 = BashOperator(
         task_id="sleep",
         depends_on_past=False,
-        # TODO: 5초 sleep하는 bash_command를 입력하고 3회 재시도하도록 설정
+        bash_command="sleep 5",
+        retries=3
     )
 
+    # Jinja Template: airflow 사용할때 많이 사용 
     loop_command = dedent(
         """
         {% for i in range(5) %}

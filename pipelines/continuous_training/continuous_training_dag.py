@@ -14,7 +14,7 @@ from utils.common import read_sql_file
 local_timezone = pendulum.timezone("Asia/Seoul")
 conn_id = "feature_store"
 airflow_dags_path = Variable.get("AIRFLOW_DAGS_PATH")
-sql_file_path = os.path.join(
+sql_file_path = os.path.join( # 긴 경로를 쓸때 디렉토리 단위로 끊어서 사용
     airflow_dags_path,
     "pipelines",
     "continuous_training",
@@ -40,7 +40,14 @@ with DAG(
     # TODO: 코드 작성
     # 아래 Task를 적절한 Operator를 사용하여 구현
     
-    data_extract = EmptyOperator(task_id="data_extraction")
+    data_extract = SQLExecuteQueryOperator(
+        task_id="data_extraction",
+        conn_id=conn_id,
+        sql=read_sql_file(sql_file_path),
+        split_statements=True,
+        autocommit=False # 기본값 false
+
+    )
 
     data_preprocessing = EmptyOperator(task_id="data_preprocessing")
 
