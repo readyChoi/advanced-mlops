@@ -36,7 +36,7 @@ class Trainer:
     __DROP_COLS = ["base_dt", "id", "customer_id", "date"]
 
     __PARAMS_CANDIDATES = {
-        "depth": [7],
+        "depth": [7, 8, 9],
         "rsm": [0.8, 0.9, 1.0],
         "l2_leaf_reg": [3, 5, 7],
     }
@@ -151,7 +151,7 @@ class Trainer:
                 # TODO: 4. self._parse_score_dict를 이용해 검증셋에 대한 스코어를 메트릭으로 저장
                 mlflow.log_metrics(
                     self._parse_score_dict(
-                        cls.get_best_score.get("validation")
+                        cls.get_best_score().get("validation")
                     )
                 )
                 # TODO: 5. signature를 포함하여 모델 정보 로깅
@@ -217,7 +217,7 @@ class Trainer:
             name="credit_score_classifier",
             model=mlflow.catboost.load_model(model_uri),
             signatures={"predict": {"batchable": True, "batch_dim": 0}},
-            metadat=model_params,
+            metadata=model_params,
         )
 
     def _make_dirs(self) -> None:

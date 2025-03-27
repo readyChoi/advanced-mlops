@@ -97,10 +97,9 @@ class Preprocessor:
             where base_dt = '{self._base_dt}'
         """
 
-        # TODO: SQLAlchemy 엔진을 이용해 위 쿼리로 데이터를 불러오는 코드 작성
         with engine.connect() as conn:
             data = pd.read_sql(text(q), con=conn)
-
+            
         if data.empty:
             raise ValueError("Fetched data is empty! :(")
 
@@ -153,19 +152,18 @@ class Preprocessor:
         Returns:
             Tuple[pd.DataFrame, pd.DataFrame]: 스케일링 완료 후 데이터 (학습, 검증)
         """
-        robust_scalers = {} # python에서는 일반적으로 바로 자료형을 적음 dict() 형식이 아니라
+        robust_scalers = {}
         
         for feature in features:
             scaler = RobustScaler()
             robust_scalers[feature] = scaler.fit(x_train[[feature]])
             x_train[feature] = scaler.transform(x_train[[feature]])
             x_val[feature] = scaler.transform(x_val[[feature]])
-            print(f"RobustScaler has been applied to {feature}")
+            print(f"RobustScaler has been applied to {feature}.")
 
-        # TODO: robust_scalers 딕셔너리를 self._encoder_path에 robust_scaler.joblib 이름으로 저장
         joblib.dump(
             robust_scalers,
-            os.path.join(self._encoder_path, "robust_scaler.joblib")
+            os.path.join(self._encoder_path, "robust_scaler.joblib"),
         )
 
         return x_train, x_val

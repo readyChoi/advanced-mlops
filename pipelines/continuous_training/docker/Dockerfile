@@ -1,9 +1,8 @@
 FROM python:3.11-slim
-LABEL maintainer="junc@lgcns.com"
+LABEL maintainer="otzslayer@gmail.com"
 
 ARG USER_HOME=/home/codespace
 
-# TODO: 인자 정보 추가
 # 모든 경로는 프로젝트 루트 폴더를 기준으로 생각
 ARG UTIL_PATH=utils
 ARG PREPROCESSING_PATH=pipelines/continuous_training/data_preprocessing

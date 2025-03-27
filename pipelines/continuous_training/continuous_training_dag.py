@@ -13,7 +13,7 @@ from utils.common import read_sql_file
 local_timezone = pendulum.timezone("Asia/Seoul")
 conn_id = "feature_store"
 airflow_dags_path = Variable.get("AIRFLOW_DAGS_PATH")
-sql_file_path = os.path.join( # 긴 경로를 쓸때 디렉토리 단위로 끊어서 사용
+sql_file_path = os.path.join(
     airflow_dags_path,
     "pipelines",
     "continuous_training",
@@ -26,7 +26,7 @@ with DAG(
     default_args={
         "owner": "user",
         "depends_on_past": False,
-        "email": ["junc@lgcns.com"],
+        "email": ["otzslayer@gmail.com"],
         "on_failure_callback": failure_callback,
         "on_success_callback": success_callback,
     },
@@ -36,31 +36,25 @@ with DAG(
     catchup=False,
     tags=["lgcns", "mlops"],
 ) as dag:
-    # TODO: 코드 작성
-    # 아래 Task를 적절한 Operator를 사용하여 구현
-    
     data_extract = SQLExecuteQueryOperator(
         task_id="data_extraction",
         conn_id=conn_id,
         sql=read_sql_file(sql_file_path),
         split_statements=True,
-        autocommit=False # 기본값 false
-
     )
 
     data_preprocessing = BashOperator(
         task_id="data_preprocessing",
         bash_command=f"cd {airflow_dags_path}/pipelines/continuous_training/docker &&"
-            "docker compose up --build && docker compose down",
+        "docker compose up --build && docker compose down",
         env={
             "PYTHON_FILE": "/home/codespace/data_preprocessing/preprocessor.py",
             "MODEL_NAME": "credit_score_classification",
             "BASE_DT": "{{ ds }}"
         },
-            append_env=True,
-            retries=1,
-        )
-
+        append_env=True,
+        retries=1,
+)
     training = BashOperator(
         task_id="model_training",
         bash_command=f"cd {airflow_dags_path}/pipelines/continuous_training/docker &&"
@@ -70,8 +64,8 @@ with DAG(
             "MODEL_NAME": "credit_score_classification",
             "BASE_DT": "{{ ds }}"
         },
-            append_env=True,
-            retries=1
-        )
+        append_env=True,
+        retries=1,
+)
 
     data_extract >> data_preprocessing >> training
